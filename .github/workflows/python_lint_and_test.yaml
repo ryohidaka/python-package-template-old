@@ -1,0 +1,27 @@
+name: Python Lint and Test
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Setup Python, Poetry and Dependencies"
+        uses: packetcoders/action-setup-cache-python-poetry@main
+        with:
+          python-version: 3.12
+          poetry-version: 1.7.1
+
+      - name: Run the automated tests (for example)
+        run: poetry run pytest -v
+
+      - name: Build the project
+        run: poetry build
