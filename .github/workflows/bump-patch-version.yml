@@ -1,0 +1,39 @@
+name: Bump Patch Version
+on:
+  workflow_run:
+    workflows: [Dependabot auto-merge]
+    types:
+      - completed
+
+jobs:
+  on-success:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: "Setup Python, Poetry and Dependencies"
+        uses: packetcoders/action-setup-cache-python-poetry@main
+        with:
+          python-version: 3.12
+          poetry-version: 1.7.1
+
+      - name: Setup Git
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git fetch origin main
+          git pull origin main
+
+      - name: Bump patch version
+        run: |
+          poetry version patch
+          new_version=$(poetry version | awk '{print $2}')
+          git add ./pyproject.toml
+          git commit -m "Bump version to $new_version"
+
+          tag_name="v$new_version"
+          git tag $tag_name
+
+          git push
+          git push $tag_name
